@@ -1,0 +1,135 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Linq;
+using task_ibos.Models;
+
+namespace task_ibos.Controllers
+{
+
+
+
+    [Route("api/[controller]")]
+    [ApiController]
+    public class EmployeeController : ControllerBase
+    {
+        private readonly APIDbContext _context;
+
+        public EmployeeController(APIDbContext dbContext)
+        {
+            _context = dbContext;
+        }
+
+
+            [HttpPut("{id}/update-code")]
+        public IActionResult UpdateEmployeeCode(int id, string employeeCode)
+        {
+            try
+            {
+                var employee = _context.Employees.Find(id);
+                if (employee == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if the new employee code already exists
+                var existingEmployee = _context.Employees.FirstOrDefault(e => e.EmployeeCode == employeeCode);
+                if (existingEmployee != null && existingEmployee.EmployeeId != id)
+                {
+                    throw new Exception("Employee code already exists.");
+                }
+
+                // Update the employee code
+                employee.EmployeeCode = employeeCode;
+                _context.SaveChanges();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        //API02: Get all employees based on maximum to minimum salary
+
+        // GET api/employees/sorted-by-salary
+        [HttpGet("sorted-by-salary")]
+        public ActionResult<IEnumerable<Employee>> GetEmployeesSortedBySalary()
+        {
+            try
+            {
+                var employees = _context.Employees.OrderByDescending(e => e.EmployeeSalary).ToList();
+                return Ok(employees);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+        // GET api/employees/absent
+        [HttpGet("absent")]
+        public ActionResult<IEnumerable<Employee>> GetAbsentEmployees()
+        {
+            try
+            {
+                var employeeIds = _context.EmployeeAttendances
+                    .Where(a => a.IsAbsent)
+                    .Select(a => a.EmployeeId)
+                    .Distinct()
+                    .ToList();
+
+                var employees = _context.Employees
+                    .Where(e => employeeIds.Contains(e.EmployeeId))
+                    .ToList();
+
+                return Ok(employees);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+
+    
+        // GET api/employees/attendance-report/{year}/{month}
+        [HttpGet("attendance-report/{year}/{month}")]
+        public ActionResult<IEnumerable<object>> GetMonthlyAttendanceReport(int year, int month)
+        {
+            try
+            {
+                var employees = _context.Employees.ToList();
+                var attendances = _context.EmployeeAttendances.ToList();
+
+                var report = employees.Select(e => new
+                {
+                    e.EmployeeName,
+                    MonthName = new DateTime(year, month, 1).ToString("MMMM"),
+                    TotalPresent = attendances.Count(a => a.EmployeeId == e.EmployeeId && a.AttendanceDate.Year == year && a.AttendanceDate.Month == month && a.IsPresent),
+                    TotalAbsent = attendances.Count(a => a.EmployeeId == e.EmployeeId && a.AttendanceDate.Year == year && a.AttendanceDate.Month == month && a.IsAbsent),
+                    TotalOffday = attendances.Count(a => a.EmployeeId == e.EmployeeId && a.AttendanceDate.Year == year && a.AttendanceDate.Month == month && a.IsOffday)
+                }).ToList();
+
+                return Ok(report);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+
+
+
+
+
+    }
+
+}
