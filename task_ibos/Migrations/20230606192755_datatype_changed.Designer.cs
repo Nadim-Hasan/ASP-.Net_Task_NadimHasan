@@ -12,8 +12,8 @@ using task_ibos.Models;
 namespace task_ibos.Migrations
 {
     [DbContext(typeof(APIDbContext))]
-    [Migration("20230606153225_updatedatabase")]
-    partial class updatedatabase
+    [Migration("20230606192755_datatype_changed")]
+    partial class datatype_changed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

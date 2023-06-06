@@ -11,7 +11,7 @@ namespace task_ibos.Models
 
         // Navigation property
         [ForeignKey("EmployeeId")]
-        public Employee Employee { get; set; }
+        public virtual ICollection<Employee> Employee { get; set; }
 
         public DateTime AttendanceDate { get; set; }
         public bool IsPresent { get; set; }
@@ -19,4 +19,7 @@ namespace task_ibos.Models
         public bool IsOffday { get; set; }
 
     }
+
+
+
 }

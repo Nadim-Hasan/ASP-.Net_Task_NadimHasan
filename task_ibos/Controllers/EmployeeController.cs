@@ -2,13 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Linq;
+using task_ibos.DTOs;
 using task_ibos.Models;
 
 namespace task_ibos.Controllers
 {
-
-
-
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeeController : ControllerBase
@@ -21,8 +19,8 @@ namespace task_ibos.Controllers
         }
 
 
-            [HttpPut("{id}/update-code")]
-        public IActionResult UpdateEmployeeCode(int id, string employeeCode)
+        [HttpPost("{id}/update-code")]
+        public IActionResult UpdateEmployeeCode(int id, [FromBody] string employeeCode)
         {
             try
             {
@@ -34,21 +32,24 @@ namespace task_ibos.Controllers
 
                 // Check if the new employee code already exists
                 var existingEmployee = _context.Employees.FirstOrDefault(e => e.EmployeeCode == employeeCode);
-                if (existingEmployee != null && existingEmployee.EmployeeId != id)
+                if (existingEmployee != null && existingEmployee.EmployeeCode == employeeCode)
                 {
                     throw new Exception("Employee code already exists.");
                 }
 
-                // Update the employee code
-                employee.EmployeeCode = employeeCode;
-                _context.SaveChanges();
-                return NoContent();
+                else {
+                    employee.EmployeeCode = employeeCode;
+                    _context.SaveChanges();
+                    return Content("Updated successfully");
+                }
+                
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
 
         //API02: Get all employees based on maximum to minimum salary
 
@@ -125,9 +126,20 @@ namespace task_ibos.Controllers
 
 
 
-
-
-
+        // GET api/employees
+        [HttpGet]
+        public ActionResult<IEnumerable<Employee>> GetAllEmployees()
+        {
+            try
+            {
+                var employees = _context.Employees.ToList();
+                return Ok(employees);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
     }

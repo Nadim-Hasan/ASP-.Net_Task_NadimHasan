@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace task_ibos.Migrations
 {
     /// <inheritdoc />
-    public partial class updatedatabase : Migration
+    public partial class datatype_changed : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
